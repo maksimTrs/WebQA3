@@ -51,7 +51,7 @@ jobs:
             timeout: 20
             install-browsers: true
     env:
-      BASE_URL: ${{ vars.BASE_URL }}
+      BASE_URL: ${{ secrets.BASE_URL }}
       TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
       TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
       MASK_SENSITIVE: 'true'
