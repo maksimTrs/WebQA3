@@ -48,7 +48,6 @@ npx playwright test --grep @smoke
 .github/
   workflows/playwright.yml       — lint → test (matrix) → publish-report → Pages
   actions/setup-node-deps/       — composite action: setup-node + npm ci
-  dependabot.yml                 — weekly SHA bumps for actions + npm
 tests/
   api/                           — *.spec.ts — REST endpoints (auth, products, user, orders)
   ui/                            — *.spec.ts — browser flows (login, signup, purchase)
@@ -167,7 +166,7 @@ The pipeline lives in `.github/workflows/playwright.yml`. Highlights:
 - **Blob reporter** in CI; `playwright merge-reports` builds one combined HTML report from both legs and deploys it to GitHub Pages on `push`/`workflow_dispatch`.
 - **Fork-PR secret guard** — the `test` job is skipped on PRs originating from forks; `TEST_USER_*` secrets are never injected into untrusted workflow code. Maintainers can re-run by pushing the branch into the repo.
 - **Least-privilege permissions** — `contents: read` is the workflow default; `pages: write` and `id-token: write` are scoped to the `publish-report` job only.
-- **SHA-pinned actions** + `dependabot.yml` — every `uses:` references a 40-char commit SHA with the version tag in a comment; Dependabot opens weekly grouped PRs to bump pins.
+- **SHA-pinned actions** — every `uses:` references a 40-char commit SHA with the version tag in a comment for reproducible builds. Bumped manually when needed.
 - **Concurrency** cancels superseded PR runs but never cancels an in-flight push to `main`/`master`, so a deploy is never aborted mid-publish.
 
 ---

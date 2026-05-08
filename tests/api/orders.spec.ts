@@ -44,7 +44,7 @@ test.describe('Orders — /order/createAndPay', { tag: '@api' }, () => {
       products: [{ id: outOfStock!.id, quantity: 1 }],
     });
 
-    expect(response).not.toBeOK();
+    await expect(response).not.toBeOK();
   });
 
   test('rejects unauthenticated request with 401', async ({ anonClients }) => {

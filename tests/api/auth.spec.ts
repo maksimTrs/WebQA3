@@ -38,7 +38,7 @@ test.describe('Auth — /user/signup', { tag: '@api' }, () => {
     const payload = createSignupPayload({ passwordConfirm: 'mismatch' });
     const response = await anonClients.user.signupResponse(payload);
 
-    expect(response).not.toBeOK();
+    await expect(response).not.toBeOK();
   });
 });
 
@@ -63,7 +63,7 @@ test.describe('Auth — /user/login', { tag: '@api' }, () => {
       password: 'wrongpass',
     });
 
-    expect(response).not.toBeOK();
+    await expect(response).not.toBeOK();
     const body = await response.json();
     expect(body).toMatchObject({
       error: { message: expect.stringMatching(/wrong credentials/i) },
@@ -76,6 +76,6 @@ test.describe('Auth — /user/login', { tag: '@api' }, () => {
       password: 'whatever',
     });
 
-    expect(response).not.toBeOK();
+    await expect(response).not.toBeOK();
   });
 });
