@@ -1,0 +1,18 @@
+name: Setup Node + install deps
+description: Pin Node, enable npm cache, run npm ci. Used by every CI job.
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      with:
+        node-version-file: '.nvmrc'
+        cache: 'npm'
+    - name: Install dependencies
+      # --prefer-offline: serve from the npm cache when possible (cuts CI minutes
+      # on warm runs). --no-audit: skip the audit network call (we run audits
+      # via Dependabot, not on every CI install). --ignore-scripts: don't run
+      # lifecycle scripts of transitive deps (defense-in-depth; Playwright's
+      # browser install is invoked explicitly by the workflow).
+      run: npm ci --prefer-offline --no-audit --ignore-scripts
+      shell: bash

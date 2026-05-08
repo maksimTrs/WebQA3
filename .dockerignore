@@ -1,0 +1,39 @@
+# Build context hygiene — keep the image small and the build cache stable.
+
+# Local node_modules — image installs a fresh copy from package-lock.
+node_modules/
+
+# Test artifacts — generated inside the container or by local CI rehearsals.
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+playwright/.auth/
+
+# Local environment — secrets must come from compose env / CI secrets.
+.env
+.env.local
+
+# IDE / OS noise
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# VCS metadata isn't needed at runtime.
+.git/
+.gitignore
+.github/
+
+# Docs and discovery artifacts — not needed inside the image.
+README.md
+CLAUDE.md
+CLAUDE-TS-PW-api-discovery-instructions.md
+webqa/
+.discovery/
+.playwright-mcp/
+
+# Logs
+*.log
+logs/

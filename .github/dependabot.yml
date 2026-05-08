@@ -1,0 +1,26 @@
+version: 2
+updates:
+  # GitHub Actions — opens PRs that bump SHA pins to the latest commit under
+  # the same major version, keeping the comment tag aligned (e.g. # v4).
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']
+
+  # npm — security patches only on the default branch; cluster minor/patch
+  # bumps into a single PR per group to cut review noise.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      eslint:
+        patterns: ['eslint*', '@eslint/*', 'typescript-eslint']
+      playwright:
+        patterns: ['@playwright/*', 'playwright*']
+      types:
+        patterns: ['@types/*']

@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
+    "paths": {
+      "@tests/*":    ["tests/*"],
+      "@fixtures/*": ["tests/fixtures/*"],
+      "@helpers/*":  ["tests/helpers/*"],
+      "@models/*":   ["tests/models/*"],
+      "@data/*":     ["tests/data/*"],
+      "@schemas/*":  ["tests/schemas/*"],
+      "@pages/*":    ["tests/pages/*"]
+    },
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": ["tests/**/*.ts", "playwright.config.ts"]
+}

@@ -1,0 +1,33 @@
+# --- Environment ---
+.env
+.env.local
+
+# --- Node ---
+node_modules/
+npm-debug.log*
+
+# --- Playwright ---
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+.playwright-mcp/
+
+# --- MCP browser snapshots (ARIA trees from browser_snapshot tool) ---
+# Discovery artifacts, not part of the framework. Should never be committed.
+snapshot-*.yml
+snapshot-*.json
+
+# --- IDE ---
+.idea/
+.vscode/
+*.iml
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# --- Logs ---
+*.log
+logs/

@@ -1,0 +1,158 @@
+name: Playwright Tests
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      grep:
+        description: 'Test tag to filter (default @smoke)'
+        required: false
+        default: '@smoke'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # Cancel superseded PR runs, but never cancel an in-flight push to
+  # main/master — a deploy mid-flight would leave Pages in a partial state.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: ./.github/actions/setup-node-deps
+      - run: npm run lint
+
+  test:
+    name: ${{ matrix.project }} smoke
+    needs: lint
+    # Skip on fork PRs — the suite requires TEST_USER_* secrets which we
+    # refuse to expose to untrusted contributor code. Fork PRs get the lint
+    # job only; a maintainer pushing the branch into the repo unblocks them.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: ${{ matrix.timeout }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - project: api
+            timeout: 15
+            install-browsers: false
+          - project: ui
+            timeout: 20
+            install-browsers: true
+    env:
+      BASE_URL: ${{ vars.BASE_URL }}
+      TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+      TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      MASK_SENSITIVE: 'true'
+      GREP: ${{ inputs.grep || '@smoke' }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: ./.github/actions/setup-node-deps
+
+      - name: Read Playwright version
+        id: pw
+        if: matrix.install-browsers
+        run: echo "version=$(node -p "require('./package-lock.json').packages['node_modules/@playwright/test'].version")" >> $GITHUB_OUTPUT
+
+      # Cache browser binaries — keyed on the resolved Playwright version so an
+      # `@playwright/test` upgrade never reuses stale binaries. Arch is included
+      # so a future ARM runner never picks up x64 binaries.
+      - name: Cache Playwright browsers
+        if: matrix.install-browsers
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        id: pw-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ steps.pw.outputs.version }}
+          restore-keys: |
+            playwright-${{ runner.os }}-${{ runner.arch }}-
+
+      - name: Install Playwright browsers
+        if: matrix.install-browsers && steps.pw-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Install OS deps only (cache hit)
+        if: matrix.install-browsers && steps.pw-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      - name: Run tests
+        run: npx playwright test --project=${{ matrix.project }} --grep "$GREP" --reporter=blob
+
+      - name: Upload blob report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: blob-report-${{ matrix.project }}
+          path: blob-report
+          retention-days: 7
+
+      - name: Upload trace bundle
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: traces-${{ matrix.project }}
+          path: test-results
+          retention-days: 14
+
+  publish-report:
+    name: Merge & publish HTML report
+    needs: test
+    # Run on success or failure of `test`, but not when it was cancelled or
+    # skipped (fork PRs skip `test` — nothing to publish).
+    if: ${{ !cancelled() && needs.test.result != 'skipped' }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: ./.github/actions/setup-node-deps
+
+      - name: Download all blob reports
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          path: all-blobs
+          pattern: blob-report-*
+          merge-multiple: true
+
+      - name: Merge into HTML report
+        run: npx playwright merge-reports --reporter html ./all-blobs
+
+      - name: Upload combined HTML report
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: html-report
+          path: playwright-report
+          retention-days: 30
+
+      # Pages deploy only on push/main and dispatch — never on PRs (no perms).
+      - name: Configure Pages
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+
+      - name: Upload Pages artifact
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+        with:
+          path: playwright-report
+
+      - name: Deploy to GitHub Pages
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        id: deploy
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4

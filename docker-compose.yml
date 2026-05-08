@@ -1,0 +1,22 @@
+services:
+  tests:
+    build: .
+    # ":local" makes it explicit that the image is built here, not pulled.
+    image: webqa-playwright:local
+    # Skip the registry pull attempt — the image only exists locally.
+    pull_policy: build
+    # PID 1 init (tini) for proper signal handling — clean Ctrl+C, no zombies.
+    init: true
+    # Chromium needs >64MB shared memory; 2gb is the safe Playwright default.
+    shm_size: 2gb
+    env_file:
+      # Soft-load .env: don't fail if it's missing (CI passes env directly).
+      - path: .env
+        required: false
+    environment:
+      CI: "true"
+    volumes:
+      # HTML report and per-test artifacts (traces, screenshots, videos)
+      # surfaced to the host for inspection after the run.
+      - ./playwright-report:/app/playwright-report
+      - ./test-results:/app/test-results

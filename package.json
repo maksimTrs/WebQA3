@@ -1,0 +1,38 @@
+{
+  "name": "webqa-playwright-framework",
+  "version": "1.0.0",
+  "description": "Production-grade Playwright API + UI test framework for webqa.mercdev.com",
+  "type": "commonjs",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:api": "playwright test --project=api",
+    "test:ui": "playwright test --project=ui",
+    "test:smoke": "playwright test --grep @smoke",
+    "test:smoke:api": "playwright test --project=api --grep @smoke",
+    "test:smoke:ui": "playwright test --project=ui --grep @smoke",
+    "test:debug": "playwright test --debug",
+    "test:headed": "playwright test --headed",
+    "report": "playwright show-report",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "docker:build": "docker compose build",
+    "docker:test": "docker compose run --rm tests",
+    "docker:test:smoke": "docker compose run --rm tests npm run test:smoke",
+    "docker:test:api": "docker compose run --rm tests npm run test:api",
+    "docker:test:ui": "docker compose run --rm tests npm run test:ui"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "@faker-js/faker": "^9.0.3",
+    "@playwright/test": "^1.59.1",
+    "@types/node": "^25.6.0",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "dotenv": "^16.4.5",
+    "eslint": "^9.13.0",
+    "eslint-plugin-playwright": "^2.0.1",
+    "json-schema-to-ts": "^3.1.1",
+    "typescript-eslint": "^8.10.0"
+  }
+}
