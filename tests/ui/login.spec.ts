@@ -1,12 +1,12 @@
 import { test, expect } from '@fixtures/uiPages.fixture';
 import { testUser } from '@data/testUser';
 
-test.describe('@ui Login', () => {
+test.describe('Login', { tag: '@ui' }, () => {
   test.beforeEach(async ({ loginPage }) => {
     await loginPage.goto();
   });
 
-  test('@smoke logs in with valid credentials and lands on dashboard', async ({
+  test('logs in with valid credentials and lands on dashboard', { tag: '@smoke' }, async ({
     page,
     loginPage,
     productsPage,

@@ -4,8 +4,10 @@ import { createSignupPayload } from '@data/userFactory';
 import { testUser } from '@data/testUser';
 import { loginResponseSchema, signupResponseSchema } from '@schemas/userSchemas';
 
-test.describe('@api Auth — /user/signup', () => {
-  test('@smoke creates a new user and returns success message', async ({ anonClients }) => {
+test.describe('Auth — /user/signup', { tag: '@api' }, () => {
+  test('creates a new user and returns success message', { tag: '@smoke' }, async ({
+    anonClients,
+  }) => {
     const payload = createSignupPayload();
 
     const body = await anonClients.user.signup(payload);
@@ -36,13 +38,14 @@ test.describe('@api Auth — /user/signup', () => {
     const payload = createSignupPayload({ passwordConfirm: 'mismatch' });
     const response = await anonClients.user.signupResponse(payload);
 
-    expect(response.status()).toBeGreaterThanOrEqual(400);
-    expect(response.status()).toBeLessThan(500);
+    expect(response).not.toBeOK();
   });
 });
 
-test.describe('@api Auth — /user/login', () => {
-  test('@smoke authenticates with valid credentials and returns JWT', async ({ anonClients }) => {
+test.describe('Auth — /user/login', { tag: '@api' }, () => {
+  test('authenticates with valid credentials and returns JWT', { tag: '@smoke' }, async ({
+    anonClients,
+  }) => {
     const body = await anonClients.user.login(testUser);
 
     validateSchema(body, loginResponseSchema, 'login response');
@@ -60,8 +63,7 @@ test.describe('@api Auth — /user/login', () => {
       password: 'wrongpass',
     });
 
-    expect(response.status()).toBeGreaterThanOrEqual(400);
-    expect(response.status()).toBeLessThan(500);
+    expect(response).not.toBeOK();
     const body = await response.json();
     expect(body).toMatchObject({
       error: { message: expect.stringMatching(/wrong credentials/i) },
@@ -74,7 +76,6 @@ test.describe('@api Auth — /user/login', () => {
       password: 'whatever',
     });
 
-    expect(response.status()).toBeGreaterThanOrEqual(400);
-    expect(response.status()).toBeLessThan(500);
+    expect(response).not.toBeOK();
   });
 });

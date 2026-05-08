@@ -3,6 +3,10 @@
     "target": "ES2022",
     "module": "CommonJS",
     "moduleResolution": "node",
+    // Suppresses warnings for compiler options that are slated for removal in
+    // TS 6.0 but still required for the current Playwright + ts-eslint stack
+    // (CommonJS module + node moduleResolution). Drop once the toolchain
+    // moves to NodeNext or the project upgrades to TS 6.0.
     "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {

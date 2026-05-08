@@ -2,12 +2,15 @@ import { test, expect } from '@fixtures/uiPages.fixture';
 import { createSignupPayload } from '@data/userFactory';
 import { testUser } from '@data/testUser';
 
-test.describe('@ui Signup', () => {
+test.describe('Signup', { tag: '@ui' }, () => {
   test.beforeEach(async ({ signupPage }) => {
     await signupPage.goto();
   });
 
-  test('@smoke registers a fresh user and shows the success alert', async ({ page, signupPage }) => {
+  test('registers a fresh user and shows the success alert', { tag: '@smoke' }, async ({
+    page,
+    signupPage,
+  }) => {
     const payload = createSignupPayload();
 
     const alertText = await signupPage.signupExpectingAlert(

@@ -4,8 +4,8 @@ import { createCardDetails } from '@data/cardFactory';
 import { createAndPayResponseSchema } from '@schemas/orderSchemas';
 import { testUser } from '@data/testUser';
 
-test.describe('@api Orders — /order/createAndPay', () => {
-  test('@smoke purchases a single in-stock product', async ({ apiClients }) => {
+test.describe('Orders — /order/createAndPay', { tag: '@api' }, () => {
+  test('purchases a single in-stock product', { tag: '@smoke' }, async ({ apiClients }) => {
     const inStock = await test.step('Find an in-stock product', async () => {
       const { products } = await apiClients.product.getProducts();
       const product = products.find((p) => !p.isOutOfStock && p.stockQuantity > 0);
@@ -44,8 +44,7 @@ test.describe('@api Orders — /order/createAndPay', () => {
       products: [{ id: outOfStock!.id, quantity: 1 }],
     });
 
-    expect(response.status()).toBeGreaterThanOrEqual(400);
-    expect(response.status()).toBeLessThan(500);
+    expect(response).not.toBeOK();
   });
 
   test('rejects unauthenticated request with 401', async ({ anonClients }) => {

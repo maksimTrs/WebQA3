@@ -1,6 +1,10 @@
 # --- Environment ---
 .env
 .env.local
+# Allow .env.example through — placeholder file is the source of truth
+# for which env vars the framework consumes.
+!.env.example
+CLAUDE.md
 
 # --- Node ---
 node_modules/

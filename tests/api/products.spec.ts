@@ -2,8 +2,8 @@ import { test, expect } from '@fixtures/apiClients.fixture';
 import { validateSchema } from '@helpers/schemaValidator';
 import { productsResponseSchema } from '@schemas/productSchemas';
 
-test.describe('@api Products — /product', () => {
-  test('@smoke returns the products catalog with sale flag', async ({ apiClients }) => {
+test.describe('Products — /product', { tag: '@api' }, () => {
+  test('returns the products catalog with sale flag', { tag: '@smoke' }, async ({ apiClients }) => {
     const body = await apiClients.product.getProducts();
 
     validateSchema(body, productsResponseSchema, 'GET /product');
@@ -15,9 +15,12 @@ test.describe('@api Products — /product', () => {
   test('every product exposes a stable identity and a non-empty name', async ({ apiClients }) => {
     const { products } = await apiClients.product.getProducts();
 
+    // Soft assertions per item — one bad product no longer hides the rest.
+    // The test still hard-fails at the end via Playwright's accumulated
+    // soft-error tracking.
     for (const product of products) {
-      expect(product.id, `product missing id: ${JSON.stringify(product)}`).toBeTruthy();
-      expect(product.name, `product missing name: ${JSON.stringify(product)}`).toBeTruthy();
+      expect.soft(product.id, `product missing id: ${JSON.stringify(product)}`).toBeTruthy();
+      expect.soft(product.name, `product missing name: ${JSON.stringify(product)}`).toBeTruthy();
     }
 
     const ids = products.map((p) => p.id);
@@ -27,8 +30,10 @@ test.describe('@api Products — /product', () => {
   test('isOutOfStock matches stockQuantity === 0', async ({ apiClients }) => {
     const { products } = await apiClients.product.getProducts();
 
+    // Soft so a single inconsistent product surfaces every other mismatch
+    // in the same run instead of failing on the first one.
     for (const p of products) {
-      expect(
+      expect.soft(
         p.isOutOfStock,
         `Inconsistent stock for "${p.name}" (id=${p.id}): stockQuantity=${p.stockQuantity}, isOutOfStock=${p.isOutOfStock}`,
       ).toBe(p.stockQuantity === 0);

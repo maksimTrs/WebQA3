@@ -3,8 +3,8 @@ import { validateSchema } from '@helpers/schemaValidator';
 import { testUser } from '@data/testUser';
 import { userProfileSchema } from '@schemas/userSchemas';
 
-test.describe('@api User — /user', () => {
-  test('@smoke returns the authenticated user profile', async ({ apiClients }) => {
+test.describe('User — /user', { tag: '@api' }, () => {
+  test('returns the authenticated user profile', { tag: '@smoke' }, async ({ apiClients }) => {
     const profile = await apiClients.user.getCurrentUser();
 
     validateSchema(profile, userProfileSchema, 'GET /user');

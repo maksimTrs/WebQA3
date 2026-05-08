@@ -22,4 +22,10 @@ RUN npm ci
 # Source last — filtered by .dockerignore.
 COPY . .
 
+# Drop privileges before running tests. The Playwright base image ships a
+# pre-created `pwuser` (uid 1000) — bind-mounted `playwright-report/` and
+# `test-results/` must be writable by uid 1000 on the host.
+RUN chown -R pwuser:pwuser /app
+USER pwuser
+
 CMD ["npx", "playwright", "test"]

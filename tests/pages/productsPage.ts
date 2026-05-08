@@ -21,6 +21,12 @@ export class ProductsPage extends NavigablePage {
 
   /** Card root for a product, found by its visible name. */
   productCard(name: string): Locator {
+    // FAILURE POINT: this XPath couples to MUI's internal `MuiPaper-root`
+    // class. A MUI major-version upgrade can rename or restructure that
+    // class, which breaks all `productCard()` callers. The product cards
+    // expose no semantic landmark (no role, no data-testid), so this is
+    // the only stable anchor available — revisit if a `data-testid` lands
+    // on the upstream component.
     return this.page
       .getByRole('heading', { name, exact: true, level: 5 })
       .locator('xpath=ancestor::*[contains(@class,"MuiPaper-root")][1]');

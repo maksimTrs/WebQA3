@@ -1,11 +1,10 @@
 import { test, expect } from '@fixtures/uiPages.fixture';
-import { testUser } from '@data/testUser';
 import { createCardDetails } from '@data/cardFactory';
 
-test.describe('@ui Purchase', () => {
-  test('@smoke logs in, adds an in-stock product to cart, completes payment', async ({
+test.describe('Purchase', { tag: '@ui' }, () => {
+  test('adds an in-stock product to cart and completes payment', { tag: '@smoke' }, async ({
     apiClients,
-    loginPage,
+    loggedInUser,
     productsPage,
     checkoutPage,
   }) => {
@@ -19,9 +18,13 @@ test.describe('@ui Purchase', () => {
       return inStock!.name;
     });
 
-    await test.step('Log in via UI', async () => {
-      await loginPage.goto();
-      await loginPage.login(testUser.email, testUser.password);
+    await test.step('Open products page (auth seeded via fixture)', async () => {
+      await productsPage.goto();
+      // Verifies the localStorage seed was picked up: the welcome heading
+      // renders only after the app accepts the token. If seeding fails,
+      // this assertion fails with a clear message instead of a downstream
+      // "cart row not found" error.
+      await expect(productsPage.welcomeHeading).toContainText(loggedInUser.email);
     });
 
     await test.step(`Add "${productName}" to cart with quantity 1`, async () => {
